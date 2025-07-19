@@ -3,71 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solana Trading Bot MVP</title>
+    <title>Solana Trading Bot - Stormtrooper Edition</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f4f4f4; }
-        h1 { text-align: center; color: #333; }
-        form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        label { display: block; margin: 10px 0 5px; font-weight: bold; }
-        input, button { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        button { background: #4CAF50; color: white; cursor: pointer; }
-        button:disabled { background: #ccc; }
-        #log { background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 4px; height: 200px; overflow-y: auto; margin-top: 20px; }
-        .error { color: red; }
+        body { background: #fff; color: #000; padding: 20px; font-family: Arial, sans-serif; }
+        .card { background: #fff; border: 2px solid #000; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .card-header { background: #000; color: #fff; }
+        button { background: #000; color: #fff; border: none; }
+        button:hover { background: #333; }
+        button:disabled { background: #ccc; color: #000; }
+        #log { height: 300px; overflow-y: auto; background: #fff; border: 1px solid #000; padding: 10px; color: #000; }
+        label { color: #000; }
+        input { border: 1px solid #000; }
     </style>
     <script src="https://unpkg.com/@solana/web3.js@1.95.0/lib/index.iife.min.js"></script>
     <script src="https://unpkg.com/@solana/spl-token@latest/lib/index.iife.min.js"></script>
 </head>
 <body>
-    <h1>Solana Trading Bot on Jupiter DEX</h1>
-    <form id="botForm">
-        <label for="inputToken">Input Token (e.g., SOL):</label>
-        <input type="text" id="inputToken" value="SOL" required>
-        
-        <label for="outputToken">Output Token (e.g., USDC):</label>
-        <input type="text" id="outputToken" value="USDC" required>
-        
-        <label for="buyThreshold">Buy Threshold (USDC below to buy):</label>
-        <input type="number" id="buyThreshold" value="160" step="1" required>
-        
-        <label for="sellThreshold">Sell Threshold (USDC above to sell):</label>
-        <input type="number" id="sellThreshold" value="180" step="1" required>
-        
-        <label for="tradeAmount">Trade Amount (in SOL):</label>
-        <input type="number" id="tradeAmount" value="0.01" step="0.001" required>
-        
-        <label for="interval">Check Interval (seconds):</label>
-        <input type="number" id="interval" value="30" min="10" required>
-        
-        <label for="simulate">Simulate Mode (no real trades):</label>
-        <input type="checkbox" id="simulate" checked>
-        
-        <button type="button" id="connectWallet">Connect Wallet</button>
-        <button type="button" id="startBot" disabled>Start Bot</button>
-        <button type="button" id="stopBot" disabled>Stop Bot</button>
-    </form>
-    <div id="log"></div>
-    <div id="error" class="error"></div>
+    <div class="container">
+        <h1 class="text-center mb-4">Stormtrooper Solana Trading Bot</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">Controls</div>
+                    <div class="card-body">
+                        <form id="botForm">
+                            <div class="mb-3">
+                                <label for="inputToken" class="form-label">Input Token (e.g., SOL)</label>
+                                <input type="text" class="form-control" id="inputToken" value="SOL" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="outputToken" class="form-label">Output Token (e.g., USDC)</label>
+                                <input type="text" class="form-control" id="outputToken" value="USDC" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="buyThreshold" class="form-label">Buy Threshold (USDC below to buy)</label>
+                                <input type="number" class="form-control" id="buyThreshold" value="175.35" step="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="sellThreshold" class="form-label">Sell Threshold (USDC above to sell)</label>
+                                <input type="number" class="form-control" id="sellThreshold" value="180" step="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="tradeAmount" class="form-label">Trade Amount (in SOL)</label>
+                                <input type="number" class="form-control" id="tradeAmount" value="0.01" step="0.001" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="interval" class="form-label">Check Interval (seconds)</label>
+                                <input type="number" class="form-control" id="interval" value="30" min="10" required>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="simulate" checked>
+                                <label class="form-check-label" for="simulate">Simulate Mode (virtual trades only)</label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="showPL" checked>
+                                <label class="form-check-label" for="showPL">Show P/L Dashboard</label>
+                            </div>
+                            <button type="button" class="btn w-100 mb-2" id="connectWallet">Connect Wallet</button>
+                            <button type="button" class="btn w-100 mb-2" id="startBot" disabled>Start Bot</button>
+                            <button type="button" class="btn w-100" id="stopBot" disabled>Stop Bot</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">Logs</div>
+                    <div class="card-body">
+                        <div id="log" class="border rounded p-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card" id="plDashboard">
+            <div class="card-header">Profit/Loss Dashboard</div>
+            <div class="card-body">
+                <h5>Total P/L: <span id="totalPL">0 USDC (0%)</span></h5>
+                <h5>Performance: <span id="performance">No trades yet</span></h5>
+                <canvas id="plChart" height="200"></canvas>
+                <table class="table table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Price</th>
+                            <th>Amount</th>
+                            <th>P/L (USDC)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradeHistory"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const { Connection, VersionedTransaction } = solanaWeb3;
+        const { Connection, VersionedTransaction, PublicKey } = solanaWeb3;
         let walletProvider = window.solana;
-        let connection = new Connection('https://mainnet.helius-rpc.com/?api-key=6356a877-b319-46e5-a49f-b7163ca2c87c');  // Your Helius RPC
+        let connection = new Connection('https://mainnet.helius-rpc.com/?api-key=6356a877-b319-46e5-a49f-b7163ca2c87c');
         let botInterval = null;
         const logDiv = document.getElementById('log');
-        const errorDiv = document.getElementById('error');
+        const totalPLSpan = document.getElementById('totalPL');
+        const performanceSpan = document.getElementById('performance');
+        const tradeHistoryBody = document.getElementById('tradeHistory');
+        const plDashboard = document.getElementById('plDashboard');
+        const showPLCheckbox = document.getElementById('showPL');
+        let plChart;
 
         const tokenMints = {
             'sol': 'So11111111111111111111111111111111111111112',
             'usdc': 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
         };
 
+        let trades = [];
+        let virtualBalance = { sol: 1, usdc: 100 };
+        let initialVirtualUSDC = 100;
+        let winCount = 0;
+        let plData = { labels: [], data: [] };
+
         function getMint(symbol) {
             return tokenMints[symbol.toLowerCase()] || symbol;
         }
 
         function log(message) {
-            logDiv.innerHTML += `<p>${new Date().toLocaleTimeString()}: ${message}</p>`;
+            logDiv.innerHTML += `<p class="mb-1">${new Date().toLocaleTimeString()}: ${message}</p>`;
             logDiv.scrollTop = logDiv.scrollHeight;
         }
 
@@ -79,12 +139,12 @@
                 document.getElementById('connectWallet').disabled = true;
                 document.getElementById('startBot').disabled = false;
             } catch (err) {
-                errorDiv.textContent = 'Connection failed: ' + err.message;
+                document.getElementById('error').textContent = 'Connection failed: ' + err.message;
             }
         }
 
         async function getPriceQuote(inputMint, outputMint, amount, inputDecimals = 9) {
-            let url = `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${Math.floor(amount * 10 ** inputDecimals)}&slippageBps=50`;
+            const url = `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${Math.floor(amount * 10 ** inputDecimals)}&slippageBps=50`;
             const response = await fetch(url);
             if (!response.ok) {
                 const errorText = await response.text();
@@ -128,6 +188,37 @@
             return txid;
         }
 
+        function updatePLDashboard() {
+            if (!showPLCheckbox.checked) {
+                plDashboard.style.display = 'none';
+                return;
+            }
+            plDashboard.style.display = 'block';
+            tradeHistoryBody.innerHTML = '';
+            let totalPL = 0;
+            trades.forEach(trade => {
+                const pl = trade.pl || 0;
+                totalPL += pl;
+                const row = `<tr><td>${trade.type}</td><td>${trade.price.toFixed(2)}</td><td>${trade.amount}</td><td>${pl.toFixed(2)}</td></tr>`;
+                tradeHistoryBody.innerHTML += row;
+            });
+            const roi = ((totalPL / initialVirtualUSDC) * 100) || 0;
+            totalPLSpan.textContent = `${totalPL.toFixed(2)} USDC (${roi.toFixed(2)}%)`;
+            const winRate = trades.length > 0 ? ((winCount / trades.length) * 100).toFixed(0) : 0;
+            performanceSpan.textContent = `Win rate: ${winRate}%, Trades: ${trades.length}`;
+            // Update chart
+            plData.labels.push(new Date().toLocaleTimeString());
+            plData.data.push(totalPL);
+            if (plChart) plChart.destroy();
+            plChart = new Chart(document.getElementById('plChart'), {
+                type: 'line',
+                data: { labels: plData.labels, datasets: [{ label: 'P/L (USDC)', data: plData.data, borderColor: '#fff', backgroundColor: '#000' }] },
+                options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { labels: { color: '#fff' } } } }
+            });
+        }
+
+        showPLCheckbox.addEventListener('change', updatePLDashboard);
+
         async function checkAndTrade() {
             const inputToken = document.getElementById('inputToken').value;
             const outputToken = document.getElementById('outputToken').value;
@@ -144,27 +235,53 @@
                 const price = quote.outAmount / 1e6;
                 log(`Current price: 1 ${inputToken.toUpperCase()} = ${price.toFixed(6)} ${outputToken.toUpperCase()}`);
 
+                let actionTaken = false;
+
                 if (price < buyThreshold) {
+                    actionTaken = true;
                     if (simulate) {
-                        log('SIMULATE: Would buy at ' + price.toFixed(2));
+                        log('SIMULATE: Would execute buy at ' + price.toFixed(2));
+                        virtualBalance.sol -= tradeAmount;
+                        virtualBalance.usdc += tradeAmount * price;
+                        trades.push({ type: 'Buy', price, amount: tradeAmount, pl: 0 });
+                        updatePLDashboard();
                     } else {
                         log('Price below buy threshold. Executing buy...');
                         const buyQuote = await getPriceQuote(inputMint, outputMint, tradeAmount);
                         const txid = await executeSwap(buyQuote);
                         log(`Buy executed: TxID ${txid}`);
+                        trades.push({ type: 'Buy', price, amount: tradeAmount, pl: 0 });
+                        updatePLDashboard();
                     }
                 } else if (price > sellThreshold) {
+                    actionTaken = true;
                     if (simulate) {
-                        log('SIMULATE: Would sell at ' + price.toFixed(2));
+                        log('SIMULATE: Would execute sell at ' + price.toFixed(2));
+                        const sellAmount = tradeAmount;
+                        const pl = sellAmount * (price - (trades[trades.length - 1]?.price || buyThreshold));
+                        if (pl > 0) winCount++;
+                        virtualBalance.sol += sellAmount;
+                        virtualBalance.usdc -= sellAmount * price;
+                        trades.push({ type: 'Sell', price, amount: sellAmount, pl });
+                        updatePLDashboard();
                     } else {
                         log('Price above sell threshold. Executing sell...');
                         const sellAmount = tradeAmount * price;
                         const sellQuote = await getPriceQuote(outputMint, inputMint, sellAmount, 6);
                         const txid = await executeSwap(sellQuote);
                         log(`Sell executed: TxID ${txid}`);
+                        const pl = tradeAmount * (price - (trades[trades.length - 1]?.price || buyThreshold));
+                        if (pl > 0) winCount++;
+                        trades.push({ type: 'Sell', price, amount: tradeAmount, pl });
+                        updatePLDashboard();
                     }
                 } else {
                     log('No action: Price within thresholds.');
+                }
+
+                if (simulate && actionTaken) {
+                    const roi = ((virtualBalance.usdc - initialVirtualUSDC) / initialVirtualUSDC * 100).toFixed(2);
+                    log(`Simulation ROI: ${roi}%, Virtual Balance: ${virtualBalance.sol.toFixed(2)} SOL / ${virtualBalance.usdc.toFixed(2)} USDC`);
                 }
             } catch (err) {
                 log('Error: ' + err.message);
